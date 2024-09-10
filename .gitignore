@@ -1,2 +1,4 @@
 *.exe
 *.o
+*.exe.log
+*.exe.log.dmp
