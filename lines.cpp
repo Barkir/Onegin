@@ -5,91 +5,17 @@
 #include <stdbool.h>
 
 #include "lines.h"
-#include <assert.h>
+#include "file_process.h"
 
-int min(int a, int b)                                       // returns min number out of a, b
+int min(int a, int b)                                                                                   // returns min number out of a, b
 {
     return a > b ? b : a;
 }
 
-size_t file_size (FILE * file)                              // returns a file size (number of chars)
+int make_text(text * _text, FILE * file)                                                                // creates a text structure (text buffer, line buffer, line buffer size)
 {
-    fseek(file, 0L, SEEK_END);
-    size_t size = ftell(file);
-    rewind(file);
-    return size;
-}
-
-void swap(char ** line1, char ** line2)                     // interchanges two char * lines
-{
-    char * tmp = 0;
-    tmp = *line1;
-    *line1 = *line2;
-    *line2 = tmp;
-}
-
-int linecmp(int sort_type, char * s1, char * s2)            // compares lines by sort_type (by start or by end)
-{
-    if (sort_type == END)
-    {
-        for (int i = strlen(s1) - 1, j = strlen(s2) - 1; i > 0 && j > 0; i--, j--)
-        {
-            while (s1[i] < 'A' && s1[i] > 0)
-                i--;
-            while(s2[j] < 'A' && s2[j] > 0)
-                j--;
-
-            if (toupper(s1[i]) != toupper(s2[j]))
-                return (int) toupper(s1[i]) - toupper(s2[j]);
-            else if (toupper(s1[i]) == 0 && toupper(s2[j]) == 0)
-                return 0;
-        }
-    }
-
-    else if (sort_type == START)
-    {
-        for (int i = 0, j = 0; i < min(strlen(s1), strlen(s2)); i++, j++)
-        {
-            while (s1[i] < 'A' && s1[i] > 0)
-                i++;
-            while(s2[j] < 'A' && s2[j] > 0)
-                j++;
-
-            if (toupper(s1[i]) != toupper(s2[j]))
-                return (int) toupper(s1[i]) - toupper(s2[j]);
-            else if (toupper(s1[i]) == 0 && toupper(s2[j]) == 0)
-                return 0;
-        }
-    }
-
-
-    return 0;
-}
-
-int count_lines(FILE * fp)                                  // counts the number of lines in file
-{
-    int counter = 0;
-    const int size = 100;
-
-    char line[size] = "";
-
-    if (fp == NULL)
-    {
-        fprintf(stderr, "Error reading file!\n");
-        return ERR;
-    }
-
-    while (fgets(line, sizeof(line), fp) != NULL)
-        counter++;
-
-    rewind(fp);
-
-    return counter;
-}
-
-int make_text(text * _text, FILE * file)                    // creates a text structure (text buffer, line buffer, line buffer size)
-{
-    const unsigned int f_sz = file_size(file);
+    size_t f_sz = file_size(file);
+    printf("file_size = %u\n", f_sz);
         if (f_sz == ERR)
         {
             fprintf(stderr, "File read error!\n");
@@ -98,7 +24,8 @@ int make_text(text * _text, FILE * file)                    // creates a text st
 
     _text->line_amount = count_lines(file);
 
-    _text->text_buf = (char*) calloc(f_sz, sizeof(char));
+    _text->text_buf = (char*) calloc(f_sz + 1, sizeof(char));
+    _text->text_buf[f_sz + 1] = '\0';
     if (_text->text_buf == NULL)
     {
         fprintf(stderr, "No memory allocated for text_buf!\n");
@@ -112,8 +39,9 @@ int make_text(text * _text, FILE * file)                    // creates a text st
         return ERR;
     }
 
-    const unsigned int ret_code = fread(_text->text_buf, sizeof(char), f_sz, file);
-    if ((ret_code + _text->line_amount) != f_sz)
+    size_t ret_code = fread(_text->text_buf, sizeof(char), f_sz, file);
+    //printf("ret_code = %u\n", ret_code);
+    if ((ret_code) != f_sz)
     {
         fprintf(stderr, "File read error!\n");
         fprintf(stderr, "ret_code = %u, f_sz = %u\n", ret_code, f_sz);
@@ -123,39 +51,20 @@ int make_text(text * _text, FILE * file)                    // creates a text st
     fprintf(stderr, "File read success!\n");
 
     _text->lines[0] = _text->text_buf;
-    for (unsigned int i = 1, j = 1; i < ret_code; i++)
+    for (unsigned int i = 0, j = 1; i < ret_code; i++)          // strchr()
     {
-        if (_text->text_buf[i - 1] == '\0')
+        if (_text->text_buf[i - 2] == '\0' && _text->text_buf[i - 1] == '\0' && i != 0 && i != 1)
         {
             _text->lines[j] = &(_text->text_buf[i]);
             if (j == _text->line_amount)
                 break;
             j++;
         }
-        if (_text->text_buf[i] == '\n')
+        if (_text->text_buf[i] == '\n' || _text->text_buf[i] == '\r')
             _text->text_buf[i] = '\0';
     }
 
     return OK;
-}
-
-void text_sort(int sort_type, text * _text)                 // sorting text by sort type
-{
-    bool swapped;
-    for (unsigned int i = 0; i < _text->line_amount; i++)
-    {
-        swapped = false;
-        for (unsigned int j = 0; j < _text->line_amount - i - 1; j++)
-        {
-            if (linecmp(sort_type, _text->lines[i], _text->lines[j]) < 0)
-            {
-                swap(&(_text->lines[i]), &(_text->lines[j]));
-                swapped = true;
-            }
-        }
-        if (swapped == false)
-            break;
-    }
 }
 
 void write_sorted_text(text * _text, FILE * file)
@@ -166,3 +75,30 @@ void write_sorted_text(text * _text, FILE * file)
         fputs("\n", file);
     }
 }
+
+int linecmp_backward(void * s1, void * s2)
+{
+    char * s1_ = *((char **) s1);
+    char * s2_ = *((char **) s2);
+    //printf("__LINECMP__\n");
+    //printf("s1 = %s\n", s1_);
+    //printf("s2 = %s\n\n", s2_);
+    for (size_t i = strlen(s1_) - 1, j = strlen(s2_) - 1; i > 0 && j > 0; i--, j--)
+    {
+        while (s1_[i] < 'A' && s1_[i] > 0)
+            i--;
+        while(s2_[j] < 'A' && s2_[j] > 0)
+            j--;
+        if (toupper(s1_[i]) != toupper(s2_[j]))
+            return (int) toupper(s1_[i]) - toupper(s2_[j]);
+        else if (toupper(s1_[i]) == 0 && toupper(s2_[j]) == 0)
+            return 0;
+    }
+    return 0;
+}
+
+int linecmp_forward(void * s1, void * s2)
+{
+    return strcmp(*(char**)s1, *(char**)s2);
+}
+
