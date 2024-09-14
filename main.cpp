@@ -8,6 +8,11 @@
 
 int main(void)
 {
+    int a = 1;
+    int b = 2;
+
+    swap(&a, &b, sizeof(int));
+    printf("a = %d, b = %d\n", a, b);
 
     FILE * in = fopen("onegin.txt", "rb");                                                                              // file with text
     FILE * out = fopen("sorted_onegin.txt", "wb");                                                                      // file for output
@@ -24,7 +29,7 @@ int main(void)
     // for (int i = 0; i < 11; i++)
     //     printf("onegin.lines[%d] = %d\n", i, onegin.lines + i);
     // printf("-------------------\n");
-    quick_sort(onegin.lines, 0, onegin.line_amount - 1, onegin.line_amount, sizeof(char*), linecmp_forward);                                     // bubble_sort for text lines (you can write your own compare func and use it)
+    quick_sort(onegin.lines, 0, onegin.line_amount - 1, onegin.line_amount, sizeof(char*), linecmp_backward);                                     // bubble_sort for text lines (you can write your own compare func and use it)
     write_sorted_text(&onegin, out);                                                                                    // writes sorted text in file
     // printf("____SORTED LINES______\n");
     // for (int i = 0; i < 11; i++)
