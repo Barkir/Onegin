@@ -8,11 +8,6 @@
 
 int main(void)
 {
-    int a = 1;
-    int b = 2;
-
-    swap(&a, &b, sizeof(int));
-    printf("a = %d, b = %d\n", a, b);
 
     FILE * in = fopen("onegin.txt", "rb");                                                                              // file with text
     FILE * out = fopen("sorted_onegin.txt", "wb");                                                                      // file for output
