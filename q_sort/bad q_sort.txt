@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "quick_sort.h"
+
+void quick_sort(void * data, size_t data_size, size_t el_size, compare_func_t compare_func)
+{
+    if (data_size >= 1)
+    {
+        void * iteration = quick_sort_iteration(data, data_size, el_size, compare_func);
+        quick_sort(data, (size_t)(data + data_size * el_size) - (size_t)(iteration + 1 * el_size), el_size, compare_func);
+        quick_sort(data + (iteration + 1) * el_size, (size_t)(data + data_size * el_size) - (size_t)(iteration - 1 * el_size), el_size, compare_func);
+    }
+}
+
+void * quick_sort_iteration(void * data, size_t data_size, size_t el_size, compare_func_t compare_func)
+{
+    void * pivot = data + (data_size - 1) * el_size;
+    void * x = data;
+
+    for (void * y = x; y < data + el_size * data_size; y++)
+    {
+        if (compare_func(data + y * el_size, pivot) < 0)
+        {
+            x += el_size;
+            swap((data + x * el_size), (data + y * el_size), el_size);
+        }
+    }
+    swap((data + x + 1 * el_size), (data + data_size * el_size), el_size);
+    return x + 1 * el_size;
+}
+
+void swap(void * el1, void * el2, size_t el_size)
+{
+    char * buf = (char*) calloc(el_size, sizeof(char));
+    memcpy(buf, el1, el_size);
+    memcpy(el1, el2, el_size);
+    memcpy(el2, buf, el_size);
+    free(buf);
+}

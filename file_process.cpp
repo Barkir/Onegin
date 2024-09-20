@@ -1,11 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "file_process.h"
 
-size_t file_size (FILE * file)                              // returns a file size (number of chars)
+long int file_size (FILE * file)                              // returns a file size (number of chars)
 {
     fseek(file, 0L, SEEK_END);
-    size_t size = ftell(file);
+    if (ferror(file))
+        return FILE_READ_ERROR;
+    long int size = ftell(file);
+    printf("size = %ld\n", size);
+    if (size == -1L)
+        return FILE_READ_ERROR;
     rewind(file);
     return size;
 }
@@ -20,7 +27,7 @@ size_t count_lines(FILE * fp)                               // counts the number
     if (fp == NULL)
     {
         fprintf(stderr, "Error reading file!\n");
-        return ERR;
+        return FILE_READ_ERROR;
     }
 
     while (fgets(line, sizeof(line), fp) != NULL)
@@ -29,4 +36,11 @@ size_t count_lines(FILE * fp)                               // counts the number
     rewind(fp);
 
     return counter;
+}
+
+void clean_file(char * arg)
+{
+    char start[100] = "python clean_file.py ";
+    const char * command = strcat(start, arg);
+    system(command);
 }

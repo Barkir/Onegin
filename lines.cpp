@@ -14,12 +14,12 @@ int min(int a, int b)                                                           
 
 int make_text(text * _text, FILE * file)                                                                // creates a text structure (text buffer, line buffer, line buffer size)
 {
-    size_t f_sz = file_size(file);
-    printf("file_size = %u\n", f_sz);
-        if (f_sz == ERR)
+    long int f_sz = file_size(file);
+    printf("file_size = %ld\n", f_sz);
+        if (f_sz == FILE_READ_ERROR)
         {
             fprintf(stderr, "File read error!\n");
-            return ERR;
+            return FILE_READ_ERROR;
         }
 
     _text->line_amount = count_lines(file);
@@ -29,14 +29,14 @@ int make_text(text * _text, FILE * file)                                        
     if (_text->text_buf == NULL)
     {
         fprintf(stderr, "No memory allocated for text_buf!\n");
-        return ERR;
+        return MEMORY_ERROR;
     }
 
     _text->lines = (char**) calloc(_text->line_amount, sizeof(char*));
     if (_text->text_buf == NULL)
     {
         fprintf(stderr, "No memory allocated for lines!\n");
-        return ERR;
+        return MEMORY_ERROR;
     }
 
     size_t ret_code = fread(_text->text_buf, sizeof(char), f_sz, file);
@@ -44,8 +44,8 @@ int make_text(text * _text, FILE * file)                                        
     if ((ret_code) != f_sz)
     {
         fprintf(stderr, "File read error!\n");
-        fprintf(stderr, "ret_code = %u, f_sz = %u\n", ret_code, f_sz);
-        return ERR;
+        fprintf(stderr, "ret_code = %ld, f_sz = %ld\n", ret_code, f_sz);
+        return FILE_READ_ERROR;
     }
 
     fprintf(stderr, "File read success!\n");
@@ -64,34 +64,51 @@ int make_text(text * _text, FILE * file)                                        
             _text->text_buf[i] = '\0';
     }
 
-    return OK;
+    return SUCCESS;
 }
 
-void write_sorted_text(text * _text, FILE * file)
+int fill_string(text * _text, string_struct * string_)
 {
-    for (unsigned int i = 0; i < _text->line_amount; i++)
+    for (size_t i = 0; i < _text->line_amount; i++)
     {
-        fputs(_text->lines[i], file);
+        string_[i].start = _text->lines[i];
+        string_[i].length = strlen(_text->lines[i]);
+    }
+
+    return SUCCESS;
+}
+
+int write_text(string_struct * string_, size_t size, FILE * file)
+{
+    for (unsigned int i = 0; i < size; i++)
+    {
+        fputs(string_[i].start, file);
+        if (ferror(file))
+            return FILE_WRITE_ERROR;
         fputs("\n", file);
+            if (ferror(file))
+                return FILE_WRITE_ERROR;
     }
 }
 
 int linecmp_backward(void * s1, void * s2)
 {
-    char * s1_ = *((char **) s1);
-    char * s2_ = *((char **) s2);
+    string_struct s1_ = *((string_struct *) s1);
+    string_struct s2_ = *((string_struct *) s2);
+
     //printf("__LINECMP__\n");
     //printf("s1 = %s\n", s1_);
     //printf("s2 = %s\n\n", s2_);
-    for (size_t i = strlen(s1_) - 1, j = strlen(s2_) - 1; i > 0 && j > 0; i--, j--)
+
+    for (size_t i = s1_.length - 1, j = s2_.length - 1; i > 0 && j > 0; i--, j--)
     {
-        while (s1_[i] < 'A' && s1_[i] > 0)
+        while (s1_.start[i] < 'A' && s1_.start[i] > 0)
             i--;
-        while(s2_[j] < 'A' && s2_[j] > 0)
+        while(s2_.start[j] < 'A' && s2_.start[j] > 0)
             j--;
-        if (toupper(s1_[i]) != toupper(s2_[j]))
-            return (int) toupper(s1_[i]) - toupper(s2_[j]);
-        else if (toupper(s1_[i]) == 0 && toupper(s2_[j]) == 0)
+        if (toupper(s1_.start[i]) != toupper(s2_.start[j]))
+            return (int) toupper(s1_.start[i]) - toupper(s2_.start[j]);
+        else if (toupper(s1_.start[i]) == 0 && toupper(s2_.start[j]) == 0)
             return 0;
     }
     return 0;
@@ -99,6 +116,6 @@ int linecmp_backward(void * s1, void * s2)
 
 int linecmp_forward(void * s1, void * s2)
 {
-    return strcmp(*(char**)s1, *(char**)s2);
+    return strcmp(((string_struct*) s1)->start, ((string_struct*) s2)->start);
 }
 

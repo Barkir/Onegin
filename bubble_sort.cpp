@@ -36,4 +36,5 @@ void swap(void * el1, void * el2, size_t el_size)
     memcpy(buf, el1, el_size);
     memcpy(el1, el2, el_size);
     memcpy(el2, buf, el_size);
+    free(buf);
 }

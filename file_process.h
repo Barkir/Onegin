@@ -1,13 +1,20 @@
 #ifndef FILE_PROCESS_H
 #define FILE_PROCESS_H
 
-size_t file_size (FILE * file);
+long int file_size (FILE * file);
 size_t count_lines(FILE * fp);
+void clean_file(char * arg);
 
-enum err
+enum errors
 {
-    OK,
-    ERR
+    FILE_OPEN_ERROR,
+    FILE_READ_ERROR,
+    FILE_WRITE_ERROR,
+    MEMORY_ERROR,
+    DEFAULT_ERROR,
+    CMD_ERROR,
+    SUCCESS
+
 };
 
 #endif

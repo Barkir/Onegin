@@ -33,8 +33,10 @@ int quick_sort_iteration(void * data, int low, int high, size_t data_size, size_
 
 void swap(void * el1, void * el2, size_t el_size)
 {
+    // int64_t
     char * buf = (char*) calloc(el_size, sizeof(char));
     memcpy(buf, el1, el_size);
     memcpy(el1, el2, el_size);
     memcpy(el2, buf, el_size);
+    free(buf);
 }
