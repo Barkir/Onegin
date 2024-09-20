@@ -119,3 +119,26 @@ int linecmp_forward(void * s1, void * s2)
     return strcmp(((string_struct*) s1)->start, ((string_struct*) s2)->start);
 }
 
+int linecmp_forwardup(void * s1, void * s2)
+{
+    string_struct s1_ = *((string_struct *) s1);
+    string_struct s2_ = *((string_struct *) s2);
+
+    //printf("__LINECMP__\n");
+    //printf("s1 = %s\n", s1_);
+    //printf("s2 = %s\n\n", s2_);
+
+    for (size_t i = 0, j = 0; i < (min(s1_.length, s2_.length)); i++, j++)
+    {
+        while (s1_.start[i] < 'A' && s1_.start[i] > 0)
+            i++;
+        while(s2_.start[j] < 'A' && s2_.start[j] > 0)
+            j++;
+        if (toupper(s1_.start[i]) != toupper(s2_.start[j]))
+            return (int) toupper(s1_.start[i]) - toupper(s2_.start[j]);
+        else if (toupper(s1_.start[i]) == 0 && toupper(s2_.start[j]) == 0)
+            return 0;
+    }
+    return 0;
+}
+
