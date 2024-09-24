@@ -20,7 +20,7 @@ void bubble_sort(void * data, size_t data_size, size_t el_size, compare_func_t c
             if (compare_func((data + i * el_size), (data + j * el_size)) < 0)
             {
                 //printf("unswapped:\n &data[%d] = %d\n &data[%d] = %d\n\n", i, data + i * el_size, j, data + j * el_size);
-                swap((void**)(data + i * el_size), (void**)(data + j * el_size));
+                uswap((void**)(data + i * el_size), (void**)(data + j * el_size));
                 //printf("swapped:\n &data[%d] = %d\n &data[%d] = %d\n\n", i, data + i * el_size, j, data + j * el_size);
                 swapped = true;
             }
@@ -30,7 +30,7 @@ void bubble_sort(void * data, size_t data_size, size_t el_size, compare_func_t c
     }
 }
 
-void swap(void * el1, void * el2, size_t el_size)
+void uswap(void * el1, void * el2, size_t el_size)
 {
     char * buf = (char*) calloc(el_size, sizeof(char));
     memcpy(buf, el1, el_size);

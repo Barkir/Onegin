@@ -44,3 +44,17 @@ void clean_file(char * arg)
     const char * command = strcat(start, arg);
     system(command);
 }
+
+int convert_comp(char * arg)
+{
+    if (strcmp(arg, "forward") == 0)
+        return FORWARD;
+    else if (strcmp(arg, "backward") == 0)
+        return BACKWARD;
+    else if (strcmp(arg, "forwardup") == 0)
+        return FORWARDUP;
+    else if (strcmp(arg, "default") == 0)
+        return FORWARD;
+    else
+        return CMD_ERROR;
+}

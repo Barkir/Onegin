@@ -1,10 +1,6 @@
 #ifndef FILE_PROCESS_H
 #define FILE_PROCESS_H
 
-long int file_size (FILE * file);
-size_t count_lines(FILE * fp);
-void clean_file(char * arg);
-
 enum errors
 {
     FILE_OPEN_ERROR,
@@ -16,5 +12,18 @@ enum errors
     SUCCESS
 
 };
+
+enum compare_enum
+{
+    FORWARD,
+    FORWARDUP,
+    BACKWARD,
+    DEFAULT
+};
+
+long int file_size (FILE * file);
+size_t count_lines(FILE * fp);
+void clean_file(char * arg);
+int convert_comp(char * arg);
 
 #endif

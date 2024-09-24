@@ -9,8 +9,30 @@
 int main(int argc, char * argv[])
 {
 
-    if (argc == 3)
+    if (argc == 4)
     {
+        compare_func_t * comp = 0;
+        switch (convert_comp(argv[3]))
+        {
+            case FORWARD:
+                comp = linecmp_forward;
+                break;
+            case BACKWARD:
+                comp = linecmp_backward;
+                break;
+            case FORWARDUP:
+                comp = linecmp_forwardup;
+                break;
+            case DEFAULT:
+                comp = linecmp_forward;
+                break;
+            case CMD_ERROR:
+                printf("Wrong compare func");
+                return CMD_ERROR;
+            default:
+                printf("Something went wrong...");
+                return CMD_ERROR;
+        }
         clean_file(argv[1]);
 
         FILE * in = fopen(argv[1], "rb");
@@ -35,6 +57,7 @@ int main(int argc, char * argv[])
         {
             case FILE_READ_ERROR:
                 fprintf(stderr, "Error reading file.");
+                free_buf:
                 free(onegin.lines);
                 free(onegin.text_buf);
                 fclose(out);
@@ -43,10 +66,7 @@ int main(int argc, char * argv[])
 
             case MEMORY_ERROR:
                 fprintf(stderr, "Error allocating memory.");
-                free(onegin.lines);
-                free(onegin.text_buf);
-                fclose(out);
-                fclose(in);
+                goto free_buf;
                 return MEMORY_ERROR;
 
             case SUCCESS:
@@ -54,10 +74,7 @@ int main(int argc, char * argv[])
 
             default:
                 fprintf(stderr, "Something went wrong...");
-                free(onegin.lines);
-                free(onegin.text_buf);
-                fclose(out);
-                fclose(in);
+                goto free_buf;
                 return DEFAULT_ERROR;
         }
 
@@ -68,10 +85,7 @@ int main(int argc, char * argv[])
         {
             fprintf(stderr, "Memory allocationg error for string_struct array");
             free(array);
-            free(onegin.lines);
-            free(onegin.text_buf);
-            fclose(in);
-            fclose(out);
+            goto free_buf;
             return MEMORY_ERROR;
         }
 
@@ -87,15 +101,12 @@ int main(int argc, char * argv[])
         //     printf("onegin.lines[%d] = %d\n", i, onegin.lines + i);
         // printf("-------------------\n");
 
-        quick_sort(array, 0, onegin.line_amount -1, onegin.line_amount, sizeof(string_struct), linecmp_backward);
+        quick_sort(array, 0, onegin.line_amount -1, onegin.line_amount, sizeof(string_struct), comp);
         if(write_text(array, onegin.line_amount, out) == FILE_WRITE_ERROR)
         {
             fprintf(stderr, "Error writing to file %s", argv[2]);
             free(array);
-            free(onegin.lines);
-            free(onegin.text_buf);
-            fclose(in);
-            fclose(out);
+            goto free_buf;
             return FILE_WRITE_ERROR;
         }
 
@@ -105,15 +116,16 @@ int main(int argc, char * argv[])
 
 
         free(array);
-        free(onegin.lines);
-        free(onegin.text_buf);
-        fclose(in);
-        fclose(out);
+        goto free_buf;
     }
 
     else
     {
-        fprintf(stderr, "debug <read_file> <out_file>");
-        return CMD_ERROR;
+        fprintf(stderr, "debug <read_file> <out_file>, <compare_type>\n");
+        fprintf(stderr, "                               forward\n");
+        fprintf(stderr, "                               backward\n");
+        fprintf(stderr, "                               forwardup\n");
+        fprintf(stderr, "                               deafult\n");
     }
+
 }
