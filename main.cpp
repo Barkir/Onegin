@@ -125,7 +125,7 @@ int main(int argc, char * argv[])
         fprintf(stderr, "                               forward\n");
         fprintf(stderr, "                               backward\n");
         fprintf(stderr, "                               forwardup\n");
-        fprintf(stderr, "                               deafult\n");
+        fprintf(stderr, "                               default\n");
     }
 
 }
