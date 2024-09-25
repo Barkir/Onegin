@@ -15,87 +15,25 @@ void uswap(void * el1, void * el2, size_t el_size)
     for (el_size; el_size >= 8; el_size -= 8)
         hswap(el1, el2, &buf8, 8);
         // printf("swapped 8 bytes\n");
+        el1 += el_size;
+        el2 += el_size;
 
-    if (el_size != 0)
+    size_t start = 4;
+
+    while(start != 0)
     {
-        switch(el_size)
+        buf8 = 0;
+        if (el_size >= start)
         {
-            case 7:
-                hswap(el1, el2, &buf4, 4);
-                hswap(el1, el2, &buf2, 2);
-                hswap(el1, el2, &buf1, 1);
-                // printf("swapped 7 bytes\n");
-                break;
-            case 6:
-                hswap(el1, el2, &buf4, 4);
-                hswap(el1, el2, &buf2, 2);
-                // printf("swapped 6 bytes\n");
-                break;
-            case 5:
-                hswap(el1, el2, &buf4, 4);
-                hswap(el1, el2, &buf1, 1);
-                // printf("swapped 5 bytes\n");
-                break;
-            case 4:
-                hswap(el1, el2, &buf4, 4);
-                // printf("swapped 4 bytes\n");
-                break;
-            case 3:
-                hswap(el1, el2, &buf2, 2);
-                hswap(el1, el2, &buf1, 1);
-                // printf("swapped 3 bytes\n");
-                break;
-            case 2:
-                hswap(el1, el2, &buf2, 2);
-                // printf("swapped 2 bytes\n");
-                break;
-            case 1:
-                hswap(el1, el2, &buf1, 1);
-                // printf("swapped 1 byte\n");
-                break;
-            default:
-                fprintf(stderr, "uswap error!");
-                break;
+            printf("%lu bytes needed to swap, we swap %lu bytes.\n", el_size, start);
+            hswap(el1, el2, &buf8, start);
+            el1 += el_size;
+            el2 += el_size;
+            el_size -= start;
         }
+        start /= 2;
     }
 
-}
-
-
-void swap8(void * el1, void * el2)
-{
-    printf("swapped 1 byte\n");
-    int8_t buf = 0;
-    buf = *(int8_t *) el2;
-    *(int8_t * ) el2 = *(int8_t *) el1;
-    *(int8_t *) el1 = buf;
-}
-
-void swap16(void * el1, void * el2)
-{
-    // printf("swapped 2 byte\n");
-    int16_t buf = 0;
-    buf = *(int16_t *) el2;
-    *(int16_t * ) el2 = *(int16_t *) el1;
-    *(int16_t *) el1 = buf;
-}
-
-void swap32(void * el1, void  * el2)
-{
-    // printf("swapped 4 bytes\n");
-    int32_t buf = 0;
-    buf = *(int32_t *) el2;
-    *(int32_t * ) el2 = *(int32_t *) el1;
-    *(int32_t *) el1 = buf;
-}
-
-void swap64(void * el1, void * el2)
-{
-    // printf("swapped 8 bytes\n");
-    int64_t buf = 0;
-    buf = *(int64_t *) el2;
-    *(int64_t *) el2 = *(int64_t *) el1;
-    *(int64_t *) el1 = buf;
 }
 
 void dswap(void * el1, void * el2, size_t el_size)                  // default swap
@@ -110,9 +48,31 @@ void dswap(void * el1, void * el2, size_t el_size)                  // default s
 
 void hswap(void * el1, void * el2, void * buf, size_t el_size)      // help swap (used only in uswap)
 {
+    // printf("____HSWAP____\n");
+    // printf("el1 = %s\n", *((char**) el1));
+    // printf("el2 = %s\n", *((char**) el2));
+
+    // printf("__COPYING TO BUF__\n");
     memcpy(buf, el1, el_size);
+    // printf("el1 = %s\n", *((char**) el1));
+    // printf("el2 = %s\n", *((char**) el2));
+    // printf("buf = %s\n", *((char**) buf));
+
+    // printf("SWAPPING EL1 with EL2\n");
     memcpy(el1, el2, el_size);
+    // printf("el1 = %s\n", *((char**) el1));
+    // printf("el2 = %s\n", *((char**) el2));
+    // printf("buf = %s\n", *((char**) buf));
+
+    // printf("SWAPPING BUF WITH EL2\n");
     memcpy(el2, buf, el_size);
-    el1 += el_size;
-    el2 += el_size;
+    // printf("el1 = %s\n", *((char**) el1));
+    // printf("el2 = %s\n", *((char**) el2));
+    // printf("buf = %s\n", *((char**) buf));
+
+    // printf("FINAL RESULT\n");
+    // printf("el1 = %s\n", *((char**) el1));
+    // printf("el2 = %s\n", *((char**) el2));
+    // printf("buf = %s\n", *((char**) buf));
+
 }

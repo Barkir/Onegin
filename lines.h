@@ -3,8 +3,6 @@
 
 #include "quick_sort.h"
 
-const int compare_num = 2;
-
 struct text
 {
     char ** lines;

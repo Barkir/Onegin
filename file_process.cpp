@@ -19,6 +19,7 @@ long int file_size (FILE * file)                              // returns a file 
 
 size_t count_lines(FILE * fp)                               // counts the number of lines in file
 {
+
     int counter = 0;
     const int size = 100;
 
@@ -45,7 +46,7 @@ void clean_file(char * arg)
     system(command);
 }
 
-int convert_comp(char * arg)
+int convert_comp_(char * arg)
 {
     if (strcmp(arg, "forward") == 0)
         return FORWARD;
@@ -57,4 +58,25 @@ int convert_comp(char * arg)
         return FORWARD;
     else
         return CMD_ERROR;
+}
+
+compare_func_t * convert_comp(char * arg)
+{
+    switch(convert_comp_(arg))
+    {
+        case FORWARD:
+            return linecmp_forward;
+        case BACKWARD:
+            return linecmp_backward;
+        case FORWARDUP:
+            return linecmp_forwardup;
+        case DEFAULT:
+            return linecmp_forward;
+        case CMD_ERROR:
+            printf("Wrong compare func");
+            return NULL;
+        default:
+            printf("Something went wrong...");
+            return NULL;
+    }
 }

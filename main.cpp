@@ -5,34 +5,16 @@
 #include "quick_sort.h"
 #include "file_process.h"
 #include "TXLib.h"
+#include "swap.h"
 
 int main(int argc, char * argv[])
 {
-
     if (argc == 4)
     {
-        compare_func_t * comp = 0;
-        switch (convert_comp(argv[3]))
-        {
-            case FORWARD:
-                comp = linecmp_forward;
-                break;
-            case BACKWARD:
-                comp = linecmp_backward;
-                break;
-            case FORWARDUP:
-                comp = linecmp_forwardup;
-                break;
-            case DEFAULT:
-                comp = linecmp_forward;
-                break;
-            case CMD_ERROR:
-                printf("Wrong compare func");
-                return CMD_ERROR;
-            default:
-                printf("Something went wrong...");
-                return CMD_ERROR;
-        }
+        compare_func_t * comp = convert_comp(argv[3]);
+        if (comp == NULL)
+            return CMD_ERROR;
+
         clean_file(argv[1]);
 
         FILE * in = fopen(argv[1], "rb");
@@ -57,7 +39,7 @@ int main(int argc, char * argv[])
         {
             case FILE_READ_ERROR:
                 fprintf(stderr, "Error reading file.");
-                free_buf:
+free_buf:
                 free(onegin.lines);
                 free(onegin.text_buf);
                 fclose(out);
@@ -91,16 +73,6 @@ int main(int argc, char * argv[])
 
         fill_string(&onegin, array);
 
-        // for (size_t i = 0; i < onegin.line_amount; i++)
-        // {
-        //     printf("len = %u, string = %10s\n", array[i].length, array[i].start);
-        // }
-
-        // printf("___UNSORTED LINES___\n");
-        // for (int i = 0; i < 11; i++)
-        //     printf("onegin.lines[%d] = %d\n", i, onegin.lines + i);
-        // printf("-------------------\n");
-
         quick_sort(array, 0, onegin.line_amount -1, onegin.line_amount, sizeof(string_struct), comp);
         if(write_text(array, onegin.line_amount, out) == FILE_WRITE_ERROR)
         {
@@ -110,15 +82,9 @@ int main(int argc, char * argv[])
             return FILE_WRITE_ERROR;
         }
 
-        // printf("____SORTED LINES______\n");
-        // for (int i = 0; i < 11; i++)
-        //     printf("onegin.lines[%d] = %d\n", i, onegin.lines + i);
-
-
         free(array);
         goto free_buf;
     }
-
     else
     {
         fprintf(stderr, "debug <read_file> <out_file>, <compare_type>\n");
